@@ -64,6 +64,7 @@ public:
 
     virtual int TC_PluginFileLoadTexture(const char* pszFilename, MipSet* pMipSet)         = 0;
     virtual int TC_PluginFileSaveTexture(const char* pszFilename, MipSet* pMipSet)         = 0;
+    virtual int TC_PluginFileSaveTexture(void** buffer, MipSet* pMipSet)                   = 0;
     virtual int TC_PluginFileLoadTexture(const char* pszFilename, CMP_Texture* srcTexture) = 0;
     virtual int TC_PluginFileSaveTexture(const char* pszFilename, CMP_Texture* srcTexture) = 0;
 };

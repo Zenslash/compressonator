@@ -29,6 +29,6 @@
 #include "dds_file.h"
 
 TC_PluginError LoadDDS_DX10(FILE* pFile, DDSD2* pDDSD, MipSet* pMipSet);
-TC_PluginError SaveDDS_DX10(FILE* pFile, const MipSet* pMipSet);
+TC_PluginError SaveDDS_DX10(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
 
 #endif

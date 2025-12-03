@@ -595,21 +595,23 @@ TC_PluginError LoadDDS_G16(FILE* pFile, DDSD2* pDDSD, MipSet* pMipSet);
 TC_PluginError LoadDDS_AG8(FILE* pFile, DDSD2* pDDSD, MipSet* pMipSet);
 TC_PluginError LoadDDS_A8(FILE* pFile, DDSD2* pDDSD, MipSet* pMipSet);
 
-TC_PluginError SaveDDS_ABGR32F(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_RG32F(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_R32F(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_ABGR16F(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_RG16F(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_R16F(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_ARGB8888(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_RGBA8888_S(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_ARGB2101010(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_ABGR16(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_R16(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_RG16(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_RGB888(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_FourCC(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_G8(FILE* pFile, const MipSet* pMipSet);
-TC_PluginError SaveDDS_A8(FILE* pFile, const MipSet* pMipSet);
+typedef void DDS_WRITE_FUNC(void* context, size_t elementSize, size_t elementCount, void* data);
+
+TC_PluginError SaveDDS_ABGR32F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_RG32F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_R32F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_ABGR16F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_RG16F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_R16F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_ARGB8888(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_RGBA8888_S(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_ARGB2101010(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_ABGR16(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_R16(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_RG16(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_RGB888(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_FourCC(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_G8(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
+TC_PluginError SaveDDS_A8(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet);
 
 #endif

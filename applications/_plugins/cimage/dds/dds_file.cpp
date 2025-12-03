@@ -723,9 +723,10 @@ TC_PluginError SaveDDS_RG16F(FILE* pFile, const MipSet* pMipSet)
     return PE_OK;
 }
 
-TC_PluginError SaveDDS_ABGR32F(FILE* pFile, const MipSet* pMipSet)
+TC_PluginError SaveDDS_ABGR32F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet)
 {
-    assert(pFile);
+    assert(writeFunc);
+    assert(context);
     assert(pMipSet);
 
     // Initialise surface descriptor
@@ -737,21 +738,24 @@ TC_PluginError SaveDDS_ABGR32F(FILE* pFile, const MipSet* pMipSet)
     ddsd2.ddpfPixelFormat.dwFourCC = D3DFMT_A32B32G32R32F;
 
     // Write the data
-    fwrite(&ddsd2, sizeof(DDSD2), 1, pFile);
+    writeFunc(context, sizeof(DDSD2), 1, &ddsd2);
 
     int nSlices = (pMipSet->m_TextureType == TT_2D) ? 1 : CMP_MaxFacesOrSlices(pMipSet, 0);
     for (int nSlice = 0; nSlice < nSlices; nSlice++)
+    {
         for (int nMipLevel = 0; nMipLevel < pMipSet->m_nMipLevels; nMipLevel++)
-            fwrite(DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, pFile);
-
-    fclose(pFile);
+        {
+            writeFunc(context, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData);
+        }
+    }
 
     return PE_OK;
 }
 
-TC_PluginError SaveDDS_R32F(FILE* pFile, const MipSet* pMipSet)
+TC_PluginError SaveDDS_R32F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet)
 {
-    assert(pFile);
+    assert(writeFunc);
+    assert(context);
     assert(pMipSet);
 
     // Initialise surface descriptor
@@ -763,21 +767,24 @@ TC_PluginError SaveDDS_R32F(FILE* pFile, const MipSet* pMipSet)
     ddsd2.ddpfPixelFormat.dwFourCC = D3DFMT_R32F;
 
     // Write the data
-    fwrite(&ddsd2, sizeof(DDSD2), 1, pFile);
+    writeFunc(context, sizeof(DDSD2), 1, &ddsd2);
 
     int nSlices = (pMipSet->m_TextureType == TT_2D) ? 1 : CMP_MaxFacesOrSlices(pMipSet, 0);
     for (int nSlice = 0; nSlice < nSlices; nSlice++)
+    {
         for (int nMipLevel = 0; nMipLevel < pMipSet->m_nMipLevels; nMipLevel++)
-            fwrite(DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, pFile);
-
-    fclose(pFile);
+        {
+            writeFunc(context, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData);
+        }
+    }
 
     return PE_OK;
 }
 
-TC_PluginError SaveDDS_RG32F(FILE* pFile, const MipSet* pMipSet)
+TC_PluginError SaveDDS_RG32F(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet)
 {
-    assert(pFile);
+    assert(writeFunc);
+    assert(context);
     assert(pMipSet);
 
     // Initialise surface descriptor
@@ -789,21 +796,24 @@ TC_PluginError SaveDDS_RG32F(FILE* pFile, const MipSet* pMipSet)
     ddsd2.ddpfPixelFormat.dwFourCC = D3DFMT_G32R32F;
 
     // Write the data
-    fwrite(&ddsd2, sizeof(DDSD2), 1, pFile);
+    writeFunc(context, sizeof(DDSD2), 1, &ddsd2);
 
     int nSlices = (pMipSet->m_TextureType == TT_2D) ? 1 : CMP_MaxFacesOrSlices(pMipSet, 0);
     for (int nSlice = 0; nSlice < nSlices; nSlice++)
+    {
         for (int nMipLevel = 0; nMipLevel < pMipSet->m_nMipLevels; nMipLevel++)
-            fwrite(DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, pFile);
-
-    fclose(pFile);
+        {
+            writeFunc(context, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData);
+        }
+    }
 
     return PE_OK;
 }
 
-TC_PluginError SaveDDS_FourCC(FILE* pFile, const MipSet* pMipSet)
+TC_PluginError SaveDDS_FourCC(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet)
 {
-    assert(pFile);
+    assert(writeFunc);
+    assert(context);
     assert(pMipSet);
 
     DDSD2 ddsd2;
@@ -826,21 +836,24 @@ TC_PluginError SaveDDS_FourCC(FILE* pFile, const MipSet* pMipSet)
     ddsd2.ddpfPixelFormat.dwFourCC                = pMipSet->m_dwFourCC;
     ddsd2.ddpfPixelFormat.dwPrivateFormatBitCount = pMipSet->m_dwFourCC2;
 
-    fwrite(&ddsd2, sizeof(DDSD2), 1, pFile);
+    writeFunc(context, sizeof(DDSD2), 1, &ddsd2);
 
     int nSlices = (pMipSet->m_TextureType == TT_2D) ? 1 : CMP_MaxFacesOrSlices(pMipSet, 0);
     for (int nSlice = 0; nSlice < nSlices; nSlice++)
+    {
         for (int nMipLevel = 0; nMipLevel < pMipSet->m_nMipLevels; nMipLevel++)
-            fwrite(DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, pFile);
-
-    fclose(pFile);
+        {
+            writeFunc(context, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData);
+        }
+    }
 
     return PE_OK;
 }
 
-TC_PluginError SaveDDS_G8(FILE* pFile, const MipSet* pMipSet)
+TC_PluginError SaveDDS_G8(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet)
 {
-    assert(pFile);
+    assert(writeFunc);
+    assert(context);
     assert(pMipSet);
 
     DDSD2 ddsd2;
@@ -852,21 +865,24 @@ TC_PluginError SaveDDS_G8(FILE* pFile, const MipSet* pMipSet)
     ddsd2.ddpfPixelFormat.dwLuminanceBitMask  = 0xff;
 
     // Write the data
-    fwrite(&ddsd2, sizeof(DDSD2), 1, pFile);
+    writeFunc(context, sizeof(DDSD2), 1, &ddsd2);
 
     int nSlices = (pMipSet->m_TextureType == TT_2D) ? 1 : CMP_MaxFacesOrSlices(pMipSet, 0);
     for (int nSlice = 0; nSlice < nSlices; nSlice++)
+    {
         for (int nMipLevel = 0; nMipLevel < pMipSet->m_nMipLevels; nMipLevel++)
-            fwrite(DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, pFile);
-
-    fclose(pFile);
+        {
+            writeFunc(context, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData);
+        }
+    }
 
     return PE_OK;
 }
 
-TC_PluginError SaveDDS_A8(FILE* pFile, const MipSet* pMipSet)
+TC_PluginError SaveDDS_A8(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet)
 {
-    assert(pFile);
+    assert(writeFunc);
+    assert(context);
     assert(pMipSet);
 
     DDSD2 ddsd2;
@@ -878,14 +894,16 @@ TC_PluginError SaveDDS_A8(FILE* pFile, const MipSet* pMipSet)
     ddsd2.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff;
 
     // Write the data
-    fwrite(&ddsd2, sizeof(DDSD2), 1, pFile);
+    writeFunc(context, sizeof(DDSD2), 1, &ddsd2);
 
     int nSlices = (pMipSet->m_TextureType == TT_2D) ? 1 : CMP_MaxFacesOrSlices(pMipSet, 0);
     for (int nSlice = 0; nSlice < nSlices; nSlice++)
+    {
         for (int nMipLevel = 0; nMipLevel < pMipSet->m_nMipLevels; nMipLevel++)
-            fwrite(DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, pFile);
-
-    fclose(pFile);
+        {
+            writeFunc(context, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData);
+        }
+    }
 
     return PE_OK;
 }

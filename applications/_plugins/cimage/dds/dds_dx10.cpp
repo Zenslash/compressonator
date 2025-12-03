@@ -453,9 +453,10 @@ bool SetupDDSD10(DDS_HEADER_DDS10& HeaderDDS10, const MipSet* pMipSet)
     return true;
 }
 
-TC_PluginError SaveDDS_DX10(FILE* pFile, const MipSet* pMipSet)
+TC_PluginError SaveDDS_DX10(DDS_WRITE_FUNC* writeFunc, void* context, const MipSet* pMipSet)
 {
-    assert(pFile);
+    assert(writeFunc);
+    assert(context);
     assert(pMipSet);
 
     DDSD2 ddsd2;
@@ -482,19 +483,21 @@ TC_PluginError SaveDDS_DX10(FILE* pFile, const MipSet* pMipSet)
     }
 
     // Write the data
-    fwrite(&ddsd2, sizeof(DDSD2), 1, pFile);
+    writeFunc(context, sizeof(DDSD2), 1, &ddsd2);
 
     DDS_HEADER_DDS10 HeaderDDS10;
     SetupDDSD10(HeaderDDS10, pMipSet);
 
-    fwrite(&HeaderDDS10, sizeof(HeaderDDS10), 1, pFile);
+    writeFunc(context, sizeof(HeaderDDS10), 1, &HeaderDDS10);
 
     int nSlices = (pMipSet->m_TextureType == TT_2D) ? 1 : CMP_MaxFacesOrSlices(pMipSet, 0);
     for (int nSlice = 0; nSlice < nSlices; nSlice++)
+    {
         for (int nMipLevel = 0; nMipLevel < pMipSet->m_nMipLevels; nMipLevel++)
-            fwrite(DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, pFile);
-
-    fclose(pFile);
+        {
+            writeFunc(context, DDS_CMips->GetMipLevel(pMipSet, nMipLevel)->m_dwLinearSize, 1, DDS_CMips->GetMipLevel(pMipSet, nMipLevel, nSlice)->m_pbData);
+        }
+    }
 
     return PE_OK;
 }

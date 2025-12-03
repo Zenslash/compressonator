@@ -835,6 +835,81 @@ CMP_ERROR CMP_API CMP_SaveTexture(const char* DestFile, CMP_MipSet* MipSetIn)
     return CMP_OK;
 }
 
+CMP_ERROR CMP_API CMP_SaveTextureMemory(const char* format, void** dstBuffer, CMP_MipSet* MipSetIn)
+{
+    CMP_RegisterHostPlugins();  // Keep for legacy, user should now use CMP_InitFramework
+
+    bool  filesaved = false;
+    CMIPS m_CMIPS;
+
+    std::string file_extension = format;
+    std::transform(file_extension.begin(), file_extension.end(), file_extension.begin(), toupperChar);
+
+    //if (((((file_extension.compare("DDS") == 0)
+    //    || file_extension.compare("KTX") == 0)
+    //    || file_extension.compare("KTX2") == 0))
+    //    != TRUE)
+    //    {
+    //    return CMP_ERR_INVALID_DEST_TEXTURE;
+    //}
+
+    PluginInterface_Image* plugin_Image;
+    plugin_Image = reinterpret_cast<PluginInterface_Image*>(g_pluginManager.GetPlugin("IMAGE", (char*)file_extension.c_str()));
+
+    if (plugin_Image)
+    {
+        bool holdswizzle = MipSetIn->m_swizzle;
+
+        plugin_Image->TC_PluginSetSharedIO(&m_CMIPS);
+        if (plugin_Image->TC_PluginFileSaveTexture(dstBuffer, (MipSet*)MipSetIn) == 0)
+        {
+            filesaved = true;
+        }
+
+        MipSetIn->m_swizzle = holdswizzle;
+
+        delete plugin_Image;
+        plugin_Image = NULL;
+    }
+
+    if (!filesaved)
+    {  // ToDo create a stb_save()
+        int len;
+        if (file_extension.compare("PNG") == 0)
+        {
+            *dstBuffer = stbi_write_png_to_mem(
+                MipSetIn->pData,
+                MipSetIn->m_nWidth * 4,
+                MipSetIn->m_nWidth, MipSetIn->m_nHeight,
+                4, &len);
+        }
+        else if (file_extension.compare("BMP") == 0)
+        {
+            //- TODO: not tested
+            auto writeFunc = [](void* context, void* data, int size)
+            {
+                memcpy(context, data, size);
+            };
+            stbi_write_bmp_to_func(writeFunc, *dstBuffer, MipSetIn->m_nWidth, MipSetIn->m_nHeight, 4, MipSetIn->pData);
+        }
+        else if (file_extension.compare("JPG") == 0)
+        {
+            //- TODO: not tested
+            auto writeFunc = [](void* context, void* data, int size)
+            {
+                memcpy(context, data, size);
+            };
+            stbi_write_jpg_to_func(writeFunc, *dstBuffer, MipSetIn->m_nWidth, MipSetIn->m_nHeight, 4, MipSetIn->pData, 100);
+        }
+        else
+        {
+            return CMP_ERR_GENERIC;
+        }
+    }
+
+    return CMP_OK;
+}
+
 CMP_INT CMP_API CMP_NumberOfProcessors(void)
 {
 #ifndef _WIN32

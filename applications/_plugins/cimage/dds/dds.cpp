@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
 
 #include "common.h"
 #include "compressonator.h"
@@ -262,50 +263,134 @@ int Plugin_DDS::TC_PluginFileSaveTexture(const char* pszFilename, MipSet* pMipSe
 
     fwrite(&DDS_HEADER, sizeof(CMP_DWORD), 1, pFile);
 
+    auto writeFunc = [](void* context, size_t elementSize, size_t elementCount, void* data)
+    {
+        fwrite(data, elementSize, elementCount, static_cast<FILE*>(context));
+    };
+
+    TC_PluginError status;
     if (pMipSet->m_dwFourCC == CMP_FOURCC_G8)
-        return SaveDDS_G8(pFile, pMipSet);
+        status = SaveDDS_G8(writeFunc, pFile, pMipSet);
     else if (pMipSet->m_dwFourCC == CMP_FOURCC_A8)
-        return SaveDDS_A8(pFile, pMipSet);
+        status = SaveDDS_A8(writeFunc, pFile, pMipSet);
     else if (IsD3D10Format(pMipSet))
-        return SaveDDS_DX10(pFile, pMipSet);
+        status = SaveDDS_DX10(writeFunc, pFile, pMipSet);
     else if (pMipSet->m_dwFourCC)
-        return SaveDDS_FourCC(pFile, pMipSet);
+        status = SaveDDS_FourCC(writeFunc, pFile, pMipSet);
     else if (pMipSet->m_ChannelFormat == CF_Float16)
     {
         if (pMipSet->m_TextureDataType == TDT_R)
-            return SaveDDS_R16F(pFile, pMipSet);
+            status = SaveDDS_R16F(writeFunc, pFile, pMipSet);
         else if (pMipSet->m_TextureDataType == TDT_RG)
-            return SaveDDS_RG16F(pFile, pMipSet);
+            status = SaveDDS_RG16F(writeFunc, pFile, pMipSet);
         else
-            return SaveDDS_ABGR16F(pFile, pMipSet);
+            status = SaveDDS_ABGR16F(writeFunc, pFile, pMipSet);
     }
     else if (pMipSet->m_ChannelFormat == CF_Float32)
     {
         if (pMipSet->m_TextureDataType == TDT_R)
-            return SaveDDS_R32F(pFile, pMipSet);
+            status = SaveDDS_R32F(writeFunc, pFile, pMipSet);
         else if (pMipSet->m_TextureDataType == TDT_RG)
-            return SaveDDS_RG32F(pFile, pMipSet);
+            status = SaveDDS_RG32F(writeFunc, pFile, pMipSet);
         else
-            return SaveDDS_ABGR32F(pFile, pMipSet);
+            status = SaveDDS_ABGR32F(writeFunc, pFile, pMipSet);
     }
     else if (pMipSet->m_ChannelFormat == CF_2101010)
-        return SaveDDS_ARGB2101010(pFile, pMipSet);
+        status = SaveDDS_ARGB2101010(writeFunc, pFile, pMipSet);
     else if (pMipSet->m_ChannelFormat == CF_16bit)
     {
         if (pMipSet->m_TextureDataType == TDT_R)
-            return SaveDDS_R16(pFile, pMipSet);
+            status = SaveDDS_R16(writeFunc, pFile, pMipSet);
         else if (pMipSet->m_TextureDataType == TDT_RG)
-            return SaveDDS_RG16(pFile, pMipSet);
+            status = SaveDDS_RG16(writeFunc, pFile, pMipSet);
         else
-            return SaveDDS_ABGR16(pFile, pMipSet);
+            status = SaveDDS_ABGR16(writeFunc, pFile, pMipSet);
     }
     else if (pMipSet->m_TextureDataType == TDT_RGB)
     {
-        return SaveDDS_RGB888(pFile, pMipSet);
+        status = SaveDDS_RGB888(writeFunc, pFile, pMipSet);
+    }
+    else if (pMipSet->m_format == CMP_FORMAT_RGBA_8888_S)
+    {
+        status = SaveDDS_RGBA8888_S(writeFunc, pFile, pMipSet);
+    }
+    else
+    {
+        status = SaveDDS_ARGB8888(writeFunc, pFile, pMipSet); 
     }
 
-    if (pMipSet->m_format == CMP_FORMAT_RGBA_8888_S)
-        return SaveDDS_RGBA8888_S(pFile, pMipSet);
+    fclose(pFile);
+}
 
-    return SaveDDS_ARGB8888(pFile, pMipSet);
+int Plugin_DDS::TC_PluginFileSaveTexture(void** buffer, MipSet* pMipSet)
+{
+    assert(buffer);
+    assert(pMipSet);
+
+    std::ostringstream stream;
+
+    stream << DDS_HEADER;
+    auto writeFunc = [](void* context, size_t elementSize, size_t elementCount, void* data)
+    {
+        std::ostringstream* stream = static_cast<std::ostringstream*>(context);
+        stream->write(static_cast<char*>(data), static_cast<std::streamsize>(elementSize * elementCount));
+    };
+
+    TC_PluginError status;
+    if (pMipSet->m_dwFourCC == CMP_FOURCC_G8)
+        status = SaveDDS_G8(writeFunc, &stream, pMipSet);
+    else if (pMipSet->m_dwFourCC == CMP_FOURCC_A8)
+        status = SaveDDS_A8(writeFunc, &stream, pMipSet);
+    else if (IsD3D10Format(pMipSet))
+        status = SaveDDS_DX10(writeFunc, &stream, pMipSet);
+    else if (pMipSet->m_dwFourCC)
+        status = SaveDDS_FourCC(writeFunc, &stream, pMipSet);
+    else if (pMipSet->m_ChannelFormat == CF_Float16)
+    {
+        if (pMipSet->m_TextureDataType == TDT_R)
+            status = SaveDDS_R16F(writeFunc, &stream, pMipSet);
+        else if (pMipSet->m_TextureDataType == TDT_RG)
+            status = SaveDDS_RG16F(writeFunc, &stream, pMipSet);
+        else
+            status = SaveDDS_ABGR16F(writeFunc, &stream, pMipSet);
+    }
+    else if (pMipSet->m_ChannelFormat == CF_Float32)
+    {
+        if (pMipSet->m_TextureDataType == TDT_R)
+            status = SaveDDS_R32F(writeFunc, &stream, pMipSet);
+        else if (pMipSet->m_TextureDataType == TDT_RG)
+            status = SaveDDS_RG32F(writeFunc, &stream, pMipSet);
+        else
+            status = SaveDDS_ABGR32F(writeFunc, &stream, pMipSet);
+    }
+    else if (pMipSet->m_ChannelFormat == CF_2101010)
+        status = SaveDDS_ARGB2101010(writeFunc, &stream, pMipSet);
+    else if (pMipSet->m_ChannelFormat == CF_16bit)
+    {
+        if (pMipSet->m_TextureDataType == TDT_R)
+            status = SaveDDS_R16(writeFunc, &stream, pMipSet);
+        else if (pMipSet->m_TextureDataType == TDT_RG)
+            status = SaveDDS_RG16(writeFunc, &stream, pMipSet);
+        else
+            status = SaveDDS_ABGR16(writeFunc, &stream, pMipSet);
+    }
+    else if (pMipSet->m_TextureDataType == TDT_RGB)
+    {
+        status = SaveDDS_RGB888(writeFunc, &stream, pMipSet);
+    }
+    else if (pMipSet->m_format == CMP_FORMAT_RGBA_8888_S)
+    {
+        status = SaveDDS_RGBA8888_S(writeFunc, &stream, pMipSet);
+    }
+    else
+    {
+        status = SaveDDS_ARGB8888(writeFunc, &stream, pMipSet);
+    }
+
+    std::streamoff size = stream.tellp();
+
+    *buffer = malloc(size);
+    memcpy(*buffer, stream.str().c_str(), size);
+
+    return status;
 }

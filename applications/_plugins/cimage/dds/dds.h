@@ -60,6 +60,7 @@ public:
     int TC_PluginSetSharedIO(void* Shared);
     int TC_PluginFileLoadTexture(const char* pszFilename, MipSet* pMipSet);
     int TC_PluginFileSaveTexture(const char* pszFilename, MipSet* pMipSet);
+    int TC_PluginFileSaveTexture(void** buffer, MipSet* pMipSet);
     int TC_PluginFileLoadTexture(const char* pszFilename, CMP_Texture* srcTexture);
     int TC_PluginFileSaveTexture(const char* pszFilename, CMP_Texture* srcTexture);
 };
