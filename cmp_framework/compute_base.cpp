@@ -835,7 +835,7 @@ CMP_ERROR CMP_API CMP_SaveTexture(const char* DestFile, CMP_MipSet* MipSetIn)
     return CMP_OK;
 }
 
-CMP_ERROR CMP_API CMP_SaveTextureMemory(const char* format, void** dstBuffer, CMP_MipSet* MipSetIn)
+CMP_ERROR CMP_API CMP_SaveTextureMemory(const char* format, void** dstBuffer, int& dataSize, CMP_MipSet* MipSetIn)
 {
     CMP_RegisterHostPlugins();  // Keep for legacy, user should now use CMP_InitFramework
 
@@ -861,7 +861,7 @@ CMP_ERROR CMP_API CMP_SaveTextureMemory(const char* format, void** dstBuffer, CM
         bool holdswizzle = MipSetIn->m_swizzle;
 
         plugin_Image->TC_PluginSetSharedIO(&m_CMIPS);
-        if (plugin_Image->TC_PluginFileSaveTexture(dstBuffer, (MipSet*)MipSetIn) == 0)
+        if (plugin_Image->TC_PluginFileSaveTexture(dstBuffer, dataSize, (MipSet*)MipSetIn) == 0)
         {
             filesaved = true;
         }
@@ -874,18 +874,18 @@ CMP_ERROR CMP_API CMP_SaveTextureMemory(const char* format, void** dstBuffer, CM
 
     if (!filesaved)
     {  // ToDo create a stb_save()
-        int len;
         if (file_extension.compare("PNG") == 0)
         {
             *dstBuffer = stbi_write_png_to_mem(
                 MipSetIn->pData,
                 MipSetIn->m_nWidth * 4,
                 MipSetIn->m_nWidth, MipSetIn->m_nHeight,
-                4, &len);
+                4, &dataSize);
         }
         else if (file_extension.compare("BMP") == 0)
         {
-            //- TODO: not tested
+            return CMP_ERR_GENERIC;
+            //- TODO: not working now
             auto writeFunc = [](void* context, void* data, int size)
             {
                 memcpy(context, data, size);
@@ -894,7 +894,8 @@ CMP_ERROR CMP_API CMP_SaveTextureMemory(const char* format, void** dstBuffer, CM
         }
         else if (file_extension.compare("JPG") == 0)
         {
-            //- TODO: not tested
+            return CMP_ERR_GENERIC;
+            //- TODO: not working now
             auto writeFunc = [](void* context, void* data, int size)
             {
                 memcpy(context, data, size);
@@ -906,7 +907,7 @@ CMP_ERROR CMP_API CMP_SaveTextureMemory(const char* format, void** dstBuffer, CM
             return CMP_ERR_GENERIC;
         }
     }
-
+	
     return CMP_OK;
 }
 

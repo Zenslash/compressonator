@@ -1054,7 +1054,8 @@ CMP_ERROR CMP_API CMP_ConvertMipTexture(CMP_MipSet* p_MipSetIn, CMP_MipSet* p_Mi
 //--------------------------------------------
 CMP_ERROR CMP_API  CMP_LoadTexture(const char* sourceFile, CMP_MipSet* pMipSet);
 CMP_ERROR CMP_API  CMP_SaveTexture(const char* destFile, CMP_MipSet* pMipSet);
-CMP_ERROR CMP_API  CMP_SaveTextureMemory(const char* format, void** dstBuffer, CMP_MipSet* pMipSet);
+// Saving to BMP and JPG formats aren't supported
+CMP_ERROR CMP_API  CMP_SaveTextureMemory(const char* format, void** dstBuffer, int& dataSize, CMP_MipSet* pMipSet);
 CMP_ERROR CMP_API  CMP_ProcessTexture(CMP_MipSet* srcMipSet, CMP_MipSet* dstMipSet, KernelOptions kernelOptions, CMP_Feedback_Proc pFeedbackProc);
 CMP_ERROR CMP_API  CMP_CompressTexture(KernelOptions* options, CMP_MipSet srcMipSet, CMP_MipSet dstMipSet, CMP_Feedback_Proc pFeedback);
 CMP_VOID CMP_API   CMP_Format2FourCC(CMP_FORMAT format, CMP_MipSet* pMipSet);

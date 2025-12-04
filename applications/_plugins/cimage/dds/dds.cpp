@@ -320,16 +320,18 @@ int Plugin_DDS::TC_PluginFileSaveTexture(const char* pszFilename, MipSet* pMipSe
     }
 
     fclose(pFile);
+
+	return status;
 }
 
-int Plugin_DDS::TC_PluginFileSaveTexture(void** buffer, MipSet* pMipSet)
+int Plugin_DDS::TC_PluginFileSaveTexture(void** buffer, int& dataSize, MipSet* pMipSet)
 {
     assert(buffer);
     assert(pMipSet);
 
     std::ostringstream stream;
 
-    stream << DDS_HEADER;
+	stream.write(reinterpret_cast<const char*>(&DDS_HEADER), sizeof(DDS_HEADER));
     auto writeFunc = [](void* context, size_t elementSize, size_t elementCount, void* data)
     {
         std::ostringstream* stream = static_cast<std::ostringstream*>(context);
@@ -391,6 +393,8 @@ int Plugin_DDS::TC_PluginFileSaveTexture(void** buffer, MipSet* pMipSet)
 
     *buffer = malloc(size);
     memcpy(*buffer, stream.str().c_str(), size);
+
+	dataSize = size;
 
     return status;
 }
